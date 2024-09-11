@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>일기장</title>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        .calendar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; }
+        .day { padding: 20px; border: 1px solid #ccc; cursor: pointer; text-align: center; }
+        .diary { display: none; margin-top: 20px; }
+        .view-diary { display: block; border: 1px solid #ccc; padding: 20px; background-color: #f9f9f9; }
+        #diaryText { display: none; }
+        .hidden { display: none; }
+        .visible { display: block; }
+    </style>
+</head>
+<body>
+    <h1>Yoonsung's Diary</h1>
+    
+    <!-- 연도 및 월 선택 -->
+    <label for="year">연도:</label>
+    <select id="year" onchange="updateCalendar()">
+        <option value="2024">2024</option>
+        <option value="2025">2025</option>
+    </select>
+    
+    <label for="month">월:</label>
+    <select id="month" onchange="updateCalendar()">
+        <option value="9">9월</option>
+        <option value="10">10월</option>
+    </select>
+
+    <div id="calendar" class="calendar"></div>
+    
+    <div id="diary" class="diary">
+        <h2 id="selectedDate"></h2>
+        <div id="diaryView" class="view-diary"></div>
+        <textarea id="diaryText" rows="10" cols="30"></textarea><br>
+        <button id="editBtn" onclick="editDiary()">수정하기</button>
+        <div id="passwordSection" class="hidden">
+            <label for="password">비밀번호: </label>
+            <input type="password" id="password" />
+            <button onclick="verifyPassword()">확인</button>
+        </div>
+        <button id="saveBtn" class="hidden" onclick="saveDiary()">저장하기</button>
+    </div>
+
+    <script>
+        const calendar = document.getElementById('calendar');
+        const diarySection = document.getElementById('diary');
+        const selectedDateElem = document.getElementById('selectedDate');
+        const diaryText = document.getElementById('diaryText');
+        const diaryView = document.getElementById('diaryView');
+        const editBtn = document.getElementById('editBtn');
+        const passwordSection = document.getElementById('passwordSection');
+        const saveBtn = document.getElementById('saveBtn');
+        const correctPassword = '006358';
+
+        let currentYear = '2024';
+        let currentMonth = '9';
+        
+        function updateCalendar() {
+            currentYear = document.getElementById('year').value;
+            currentMonth = document.getElementById('month').value;
+            renderCalendar();
+        }
+
+        function renderCalendar() {
+            calendar.innerHTML = ''; // 캘린더 초기화
+            for (let i = 1; i <= 30; i++) {
+                const dayElem = document.createElement('div');
+                dayElem.className = 'day';
+                dayElem.textContent = i;
+                dayElem.onclick = () => selectDate(i);
+                calendar.appendChild(dayElem);
+            }
+        }
+
+        // 날짜 선택 시 일기 작성/조회
+        function selectDate(day) {
+            const selectedDate = `${currentYear}년 ${currentMonth}월 ${day}일`;
+            selectedDateElem.textContent = selectedDate;
+            diarySection.style.display = 'block';
+
+            // 로컬 스토리지에서 일기 불러오기
+            const savedDiary = localStorage.getItem(selectedDate);
+            diaryView.innerHTML = savedDiary ? savedDiary : '일기가 없습니다.';
+            diaryText.value = savedDiary || '';
+            diaryText.style.display = 'none'; // 수정 전에는 textarea 숨기기
+            saveBtn.classList.add('hidden');
+            editBtn.classList.remove('hidden');
+            passwordSection.classList.add('hidden');
+        }
+
+        // 수정 버튼 클릭 시 비밀번호 입력창 표시
+        function editDiary() {
+            passwordSection.classList.remove('hidden');
+        }
+
+        // 비밀번호 확인
+        function verifyPassword() {
+            const enteredPassword = document.getElementById('password').value;
+            if (enteredPassword === correctPassword) {
+                passwordSection.classList.add('hidden');
+                diaryText.style.display = 'block';
+                diaryView.style.display = 'none';
+                saveBtn.classList.remove('hidden');
+                editBtn.classList.add('hidden');
+            } else {
+                alert('비밀번호가 틀렸습니다.');
+            }
+        }
+
+        // 일기 저장 기능
+        function saveDiary() {
+            const date = selectedDateElem.textContent;
+            const text = diaryText.value;
+            localStorage.setItem(date, text);
+
+            // 저장 후 일기 보기 모드로 전환
+            diaryView.innerHTML = text;
+            diaryText.style.display = 'none';
+            diaryView.style.display = 'block';
+            saveBtn.classList.add('hidden');
+            alert('일기가 저장되었습니다!');
+        }
+
+        // 초기에 캘린더 생성
+        renderCalendar();
+    </script>
+</body>
+</html>
